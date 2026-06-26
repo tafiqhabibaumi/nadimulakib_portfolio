@@ -70,8 +70,20 @@ if (process.env.VERCEL) {
   }
 }
 
-// In-memory active session tokens for the admin dashboard
-const activeSessions = new Set();
+const ADMIN_SECRET = process.env.MONGODB_URI || 'portfolio_secret_key';
+
+// Helper to authenticate request token statelessly
+async function isAuthenticated(req) {
+  const authHeader = req.headers['authorization'];
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+    const config = await getConfigData();
+    const savedHash = config.admin_password || '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9';
+    const expectedToken = crypto.createHash('sha256').update(savedHash + ADMIN_SECRET).digest('hex');
+    return token === expectedToken;
+  }
+  return false;
+}
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -92,16 +104,6 @@ const MIME_TYPES = {
   '.otf': 'font/otf',
   '.eot': 'application/vnd.ms-fontobject'
 };
-
-// Helper to authenticate request token
-function isAuthenticated(req) {
-  const authHeader = req.headers['authorization'];
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.substring(7);
-    return activeSessions.has(token);
-  }
-  return false;
-}
 
 // Compiler function: reads templates, dynamically generates components HTML, replaces SEO/variables, and saves index.html + JS chunk
 function compileWebsite(data) {
@@ -955,8 +957,7 @@ function compileWebsite(data) {
         const inputHash = crypto.createHash('sha256').update(password).digest('hex');
         
         if (inputHash === savedHash) {
-          const token = crypto.randomBytes(32).toString('hex');
-          activeSessions.add(token);
+          const token = crypto.createHash('sha256').update(savedHash + ADMIN_SECRET).digest('hex');
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ success: true, token }));
         } else {
@@ -992,7 +993,7 @@ function compileWebsite(data) {
 
   // 3. Save Config (Authenticated)
   if (method === 'POST' && pathname === '/api/config') {
-    if (!isAuthenticated(req)) {
+    if (!(await isAuthenticated(req))) {
       res.writeHead(401, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Unauthorized' }));
       return;
@@ -1031,7 +1032,7 @@ function compileWebsite(data) {
 
   // 4. File Asset Upload (Authenticated)
   if (method === 'POST' && pathname === '/api/upload') {
-    if (!isAuthenticated(req)) {
+    if (!(await isAuthenticated(req))) {
       res.writeHead(401, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Unauthorized' }));
       return;
