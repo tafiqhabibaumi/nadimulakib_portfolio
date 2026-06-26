@@ -908,7 +908,7 @@ function compileWebsite(data) {
   html = html.replace(/\/images\/mehedi2\.png/g, data.about.image);
 
   // Write compiled HTML
-  fs.writeFileSync(liveHtmlPath, html);
+  
   
   // 13. JS Hydration replacements
   js = js.replace(/"Mehedi Hasan"/g, JSON.stringify(data.general.name));
@@ -924,10 +924,10 @@ function compileWebsite(data) {
   js = js.replace(/"I specialize in developing modern full-stack applications using the MERN stack with a strong focus on performance and clean architecture\. I’m passionate about solving real-world problems and continuously improving my skills\. Let’s connect and discuss how I can contribute to your next project\."/g, JSON.stringify(data.metadata.description.slice(0, 300)));
   
   // Write compiled client JS
-  fs.writeFileSync(liveJsPath, js);
+  
   
   console.log("Successfully compiled portfolio files!");
-  return true;
+  return { html, js };
 }
 
 const server = http.createServer(async (req, res) => {
@@ -1009,18 +1009,11 @@ const server = http.createServer(async (req, res) => {
         }
         delete newConfig.new_password;
 
-        // Write config back to file
-        fs.writeFileSync(DATA_FILE, JSON.stringify(newConfig, null, 2));
-
-        // Recompile portfolio static assets
-        const success = compileWebsite(newConfig);
-        if (success) {
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ success: true, message: 'Settings saved and page compiled successfully.' }));
-        } else {
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ success: false, error: 'Recompilation failed' }));
-        }
+        // Write config back to MongoDB
+        await saveConfigData(newConfig);
+        
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, message: 'Settings saved and page compiled successfully.' }));
       } catch (e) {
         console.error('Config save error:', e);
         res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -1188,8 +1181,34 @@ const server = http.createServer(async (req, res) => {
   // Serve admin page
   if (pathname === '/admin') {
     filePath = path.join(__dirname, 'admin.html');
-  } else if (pathname === '/' || pathname === '') {
-    filePath = path.join(__dirname, 'index.html');
+  } else if (pathname === '/' || pathname === '' || pathname === '/index.html') {
+    getConfigData().then(configData => {
+      const compiled = compileWebsite(configData);
+      if (compiled && compiled.html) {
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(compiled.html);
+      } else {
+        serve500(res);
+      }
+    }).catch(err => {
+      console.error(err);
+      serve500(res);
+    });
+    return;
+  } else if (pathname === '/_next/static/chunks/0is~5-fx~ag7_.js') {
+    getConfigData().then(configData => {
+      const compiled = compileWebsite(configData);
+      if (compiled && compiled.js) {
+        res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
+        res.end(compiled.js);
+      } else {
+        serve500(res);
+      }
+    }).catch(err => {
+      console.error(err);
+      serve500(res);
+    });
+    return;
   }
 
   // Check if file exists
