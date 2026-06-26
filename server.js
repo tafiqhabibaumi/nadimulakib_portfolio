@@ -1222,7 +1222,10 @@ function compileWebsite(originalData) {
     filePath = path.join(__dirname, 'admin.html');
   } else if (pathname === '/' || pathname === '' || pathname === '/index.html') {
     if (CACHED_HTML) {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.writeHead(200, { 
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=3600'
+      });
       return res.end(CACHED_HTML);
     }
     getConfigData().then(configData => {
@@ -1230,7 +1233,10 @@ function compileWebsite(originalData) {
       if (compiled && compiled.html) {
         CACHED_HTML = compiled.html;
         CACHED_JS = compiled.js;
-        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.writeHead(200, { 
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=3600'
+        });
         res.end(compiled.html);
       } else {
         serve500(res);
@@ -1242,7 +1248,10 @@ function compileWebsite(originalData) {
     return;
   } else if (pathname === '/_next/static/chunks/0is~5-fx~ag7_.js') {
     if (CACHED_JS) {
-      res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
+      res.writeHead(200, { 
+        'Content-Type': 'application/javascript; charset=utf-8',
+        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=3600'
+      });
       return res.end(CACHED_JS);
     }
     getConfigData().then(configData => {
@@ -1250,7 +1259,10 @@ function compileWebsite(originalData) {
       if (compiled && compiled.js) {
         CACHED_HTML = compiled.html;
         CACHED_JS = compiled.js;
-        res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
+        res.writeHead(200, { 
+          'Content-Type': 'application/javascript; charset=utf-8',
+          'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=3600'
+        });
         res.end(compiled.js);
       } else {
         serve500(res);
@@ -1298,7 +1310,11 @@ function serveFile(filePath, res) {
     }
     const ext = path.extname(filePath).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-    res.writeHead(200, { 'Content-Type': contentType, 'Content-Length': data.length });
+    res.writeHead(200, { 
+      'Content-Type': contentType, 
+      'Content-Length': data.length,
+      'Cache-Control': 'public, max-age=31536000, immutable'
+    });
     res.end(data);
   });
 }
