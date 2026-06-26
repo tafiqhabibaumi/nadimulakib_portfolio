@@ -183,6 +183,11 @@ function compileWebsite(originalData) {
     object-fit: contain !important;
     object-position: bottom center !important;
   }
+  /* Navbar Logo sizing fix - use cover to zoom in and crop out transparent padding */
+  header img[alt="Logo"] {
+    object-fit: cover !important;
+    object-position: center center !important;
+  }
   section#home .absolute.bottom-0 {
     width: 90% !important;
     max-width: 90% !important;
