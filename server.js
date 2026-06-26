@@ -54,7 +54,7 @@ async function saveConfigData(newConfig) {
       await ConfigModel.create({ data: newConfig });
     }
   } else {
-    await saveConfigData(newConfig);
+    fs.writeFileSync(DATA_FILE, JSON.stringify(newConfig, null, 2));
   }
 }
 
@@ -106,7 +106,22 @@ const MIME_TYPES = {
 };
 
 // Compiler function: reads templates, dynamically generates components HTML, replaces SEO/variables, and saves index.html + JS chunk
-function compileWebsite(data) {
+function compileWebsite(originalData) {
+  let data = JSON.parse(JSON.stringify(originalData));
+  
+  function replaceBase64WithUrl(obj, currentPath) {
+    if (typeof obj !== 'object' || obj === null) return;
+    for (const key in obj) {
+      const val = obj[key];
+      const newPath = currentPath ? `${currentPath}.${key}` : key;
+      if (typeof val === 'string' && val.startsWith('data:')) {
+        obj[key] = `/api/image?key=${newPath}`;
+      } else if (typeof val === 'object') {
+        replaceBase64WithUrl(val, newPath);
+      }
+    }
+  }
+  replaceBase64WithUrl(data, '');
   const templateHtmlPath = path.join(__dirname, 'index.template.html');
   const liveHtmlPath = path.join(__dirname, 'index.html');
   
@@ -907,8 +922,22 @@ function compileWebsite(data) {
   });
 
   // Replace remaining hardcoded profile text & image in static HTML to match client components hydration props
+    html = html.replace(/Nadimul Haque Akib/g, data.general.name);
   html = html.replace(/Mehedi Hasan/g, data.general.name);
-  html = html.replace(/\/images\/mehedi2\.png/g, data.about.image);
+  html = html.replace(/Software Engineer/g, data.hero.role);
+    html = html.replace(/%2Fimages%2Fmehedi2\.png/g, encodeURIComponent(data.about.image));
+    
+    html = html.replace(/\/images\/mehedi\.png/g, data.general.avatar);
+    html = html.replace(/%2Fimages%2Fmehedi\.png/g, encodeURIComponent(data.general.avatar));
+    
+    html = html.replace(/\/images\/mehedi\.png/g, data.general.avatar);
+    html = html.replace(/%2Fimages%2Fmehedi\.png/g, encodeURIComponent(data.general.avatar));
+    
+    html = html.replace(/\/logo\/logo\.png/g, data.general.logo);
+    html = html.replace(/%2Flogo%2Flogo\.png/g, encodeURIComponent(data.general.logo));
+    
+    html = html.replace(/\/images\/brain\.png/g, data.skills.brain_image);
+    html = html.replace(/%2Fimages%2Fbrain\.png/g, encodeURIComponent(data.skills.brain_image));
 
   // Write compiled HTML
   
@@ -939,10 +968,22 @@ function compileWebsite(data) {
   let CACHED_JS = null;
 
   const server = http.createServer(async (req, res) => {
-  await connectDB();
-  const parsedUrl = url.parse(req.url, true);
-  let pathname = parsedUrl.pathname;
-  const method = req.method;
+    await connectDB();
+    const parsedUrl = url.parse(req.url, true);
+    let pathname = parsedUrl.pathname;
+    const method = req.method;
+
+    // Next.js Image Optimization emulation (Must happen before API Routing so /api/image works)
+    if (pathname === '/_next/image') {
+      const imageUrl = parsedUrl.query.url;
+      if (imageUrl) {
+        // Rewrite the URL so it can be handled by API routes or static files
+        req.url = imageUrl;
+        const rewrittenUrl = url.parse(req.url, true);
+        pathname = rewrittenUrl.pathname;
+        Object.assign(parsedUrl.query, rewrittenUrl.query);
+      }
+    }
 
   // ==========================================
   // API ROUTING
@@ -975,7 +1016,37 @@ function compileWebsite(data) {
     return;
   }
 
-  // 2. Fetch Config (Public-safe)
+    // 1.5 Image Serving Route (for base64 stored in MongoDB)
+    if (method === 'GET' && pathname === '/api/image') {
+      const key = parsedUrl.query.key;
+      if (!key) {
+        res.writeHead(400); return res.end();
+      }
+      try {
+        const config = await getConfigData();
+        const parts = key.split('.');
+        let val = config;
+        for (const p of parts) { if (val) val = val[p]; }
+        
+        if (typeof val === 'string' && val.startsWith('data:')) {
+          const matches = val.match(/^data:([A-Za-z0-9\-+\/\.]+);base64,([\s\S]+)$/);
+          if (matches && matches.length === 3) {
+            const buffer = Buffer.from(matches[2], 'base64');
+            res.writeHead(200, {
+              'Content-Type': matches[1],
+              'Cache-Control': 'public, max-age=31536000'
+            });
+            return res.end(buffer);
+          }
+        }
+        res.writeHead(404); res.end('Not Found');
+      } catch (e) {
+        res.writeHead(500); res.end();
+      }
+      return;
+    }
+  
+    // 2. Fetch Config (Public-safe)
   if (method === 'GET' && pathname === '/api/config') {
     try {
       const config = await getConfigData();
@@ -1135,14 +1206,6 @@ function compileWebsite(data) {
   // ==========================================
   // STATIC ASSETS AND PAGES ROUTING
   // ==========================================
-
-  // Next.js Image Optimization emulation
-  if (pathname === '/_next/image') {
-    const imageUrl = parsedUrl.query.url;
-    if (imageUrl) {
-      pathname = imageUrl;
-    }
-  }
 
   // Prevent directory traversal attacks
   pathname = pathname.replace(/^(\.\.[\/\\])+/, '');
