@@ -635,6 +635,7 @@ function compileWebsite(data) {
             if (props.name === 'Mehedi Hasan' && props.avatarUrl) {
               props.name = data.general.name;
               props.handle = data.general.name;
+              props.title = data.hero.role;
               props.avatarUrl = data.about.image;
               return;
             }
@@ -922,6 +923,8 @@ function compileWebsite(data) {
   
   // Additional bundle hardcoded overrides
   js = js.replace(/"A MERN-Stack Web Developer"/g, JSON.stringify(data.hero.role));
+  js = js.replace(/"Software Engineer"/g, JSON.stringify(data.hero.role));
+  js = js.replace(/"\/logo\/logo\.png"/g, JSON.stringify(data.general.logo));
   js = js.replace(/"I build scalable, high-performance web applications with modern technologies like MERN stack, focusing on clean UI and seamless user experience\."/g, JSON.stringify(data.hero.bio));
   js = js.replace(/"I specialize in developing modern full-stack applications using the MERN stack with a strong focus on performance and clean architecture\. I’m passionate about solving real-world problems and continuously improving my skills\. Let’s connect and discuss how I can contribute to your next project\."/g, JSON.stringify(data.metadata.description.slice(0, 300)));
   
@@ -1042,56 +1045,21 @@ function compileWebsite(data) {
           res.writeHead(400, { 'Content-Type': 'application/json' });
           return res.end(JSON.stringify({ success: false, error: 'Missing parameters' }));
         }
-
         const matches = fileData.match(/^data:([A-Za-z0-9\-+\/\.]+);base64,([\s\S]+)$/);
         if (!matches || matches.length !== 3) {
           res.writeHead(400, { 'Content-Type': 'application/json' });
           return res.end(JSON.stringify({ success: false, error: 'Invalid base64 encoding' }));
         }
 
-        const buffer = Buffer.from(matches[2], 'base64');
-        const ext = path.extname(fileName).toLowerCase();
-        
-        let relativeDir = 'images';
-        let customFileName = `upload_${uploadKey}_${Date.now()}${ext}`;
-
-        if (uploadKey === 'logo') {
-          relativeDir = 'logo';
-          customFileName = `logo${ext}`;
-        } else if (uploadKey === 'favicon') {
-          relativeDir = '';
-          customFileName = `favicon.ico`;
-        } else if (uploadKey === 'resume') {
-          relativeDir = '';
-          customFileName = `resume.pdf`;
-        } else if (uploadKey === 'avatar') {
-          relativeDir = 'images';
-          customFileName = `mehedi${ext}`;
-        } else if (uploadKey === 'brain') {
-          relativeDir = 'images';
-          customFileName = `brain${ext}`;
-        } else if (uploadKey.startsWith('skill_')) {
-          relativeDir = 'icons';
-          customFileName = `${uploadKey}_${Date.now()}${ext}`;
-        } else if (uploadKey.startsWith('proj_')) {
-          relativeDir = 'projects';
-          customFileName = `${uploadKey}_${Date.now()}${ext}`;
-        } else if (uploadKey.startsWith('qual_')) {
-          relativeDir = 'logo';
-          customFileName = `${uploadKey}_${Date.now()}${ext}`;
+        if (fileData.length > 4000000) {
+          res.writeHead(413, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ success: false, error: 'File is too large! Please upload an image under 3MB.' }));
         }
 
-        const destDir = process.env.VERCEL ? path.join('/tmp', relativeDir) : path.join(__dirname, relativeDir);
-        if (!fs.existsSync(destDir)) {
-          fs.mkdirSync(destDir, { recursive: true });
-        }
-
-        const fullPath = path.join(destDir, customFileName);
-        fs.writeFileSync(fullPath, buffer);
-
-        const relativePath = relativeDir ? `/${relativeDir}/${customFileName}` : `/${customFileName}`;
+        // Return the base64 data URI directly to be saved in MongoDB config!
+        // This avoids the Vercel read-only filesystem and transient /tmp storage issues.
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: true, filePath: relativePath }));
+        res.end(JSON.stringify({ success: true, filePath: fileData }));
       } catch (e) {
         console.error('File upload error:', e);
         res.writeHead(500, { 'Content-Type': 'application/json' });
