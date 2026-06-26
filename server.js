@@ -17,7 +17,7 @@ async function connectDB() {
   if (dbConnected) return;
   if (!MONGODB_URI) return;
   try {
-    await mongoose.connect(MONGODB_URI);
+    await mongoose.connect(MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
     dbConnected = true;
     console.log("Connected to MongoDB!");
     // Seed database if empty
