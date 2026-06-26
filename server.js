@@ -974,19 +974,15 @@ function compileWebsite(data) {
 
   // 2. Fetch Config (Public-safe)
   if (method === 'GET' && pathname === '/api/config') {
-    if (fs.existsSync(DATA_FILE)) {
-      try {
-        const config = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-        delete config.admin_password; // Strip password
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(config));
-      } catch (e) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Config parse failed' }));
-      }
-    } else {
-      res.writeHead(404, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Data not initialized' }));
+    try {
+      const config = await getConfigData();
+      delete config.admin_password; // Strip password
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(config));
+    } catch (e) {
+      console.error('Fetch config error:', e);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Config parse failed' }));
     }
     return;
   }
