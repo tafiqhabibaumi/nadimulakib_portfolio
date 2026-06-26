@@ -1116,7 +1116,7 @@
                             throw new Error(data.error);
                         }
                     } catch (err) {
-                        statusMessage.textContent = `Asset upload failed: ${key}. Compile aborted.`;
+                        statusMessage.textContent = `Asset upload failed: ${key}. Error: ${err.message}`;
                         statusMessage.className = 'text-red-400 font-semibold opacity-100';
                         resetButtonStates();
                         return;

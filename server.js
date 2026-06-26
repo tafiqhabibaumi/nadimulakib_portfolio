@@ -927,10 +927,13 @@ function compileWebsite(data) {
   
   
   console.log("Successfully compiled portfolio files!");
-  return { html, js };
-}
+    return { html, js };
+  }
+  
+  let CACHED_HTML = null;
+  let CACHED_JS = null;
 
-const server = http.createServer(async (req, res) => {
+  const server = http.createServer(async (req, res) => {
   await connectDB();
   const parsedUrl = url.parse(req.url, true);
   let pathname = parsedUrl.pathname;
@@ -1012,6 +1015,9 @@ const server = http.createServer(async (req, res) => {
         // Write config back to MongoDB
         await saveConfigData(newConfig);
         
+        CACHED_HTML = null;
+        CACHED_JS = null;
+
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ success: true, message: 'Settings saved and page compiled successfully.' }));
       } catch (e) {
@@ -1182,9 +1188,15 @@ const server = http.createServer(async (req, res) => {
   if (pathname === '/admin') {
     filePath = path.join(__dirname, 'admin.html');
   } else if (pathname === '/' || pathname === '' || pathname === '/index.html') {
+    if (CACHED_HTML) {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      return res.end(CACHED_HTML);
+    }
     getConfigData().then(configData => {
       const compiled = compileWebsite(configData);
       if (compiled && compiled.html) {
+        CACHED_HTML = compiled.html;
+        CACHED_JS = compiled.js;
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(compiled.html);
       } else {
@@ -1196,9 +1208,15 @@ const server = http.createServer(async (req, res) => {
     });
     return;
   } else if (pathname === '/_next/static/chunks/0is~5-fx~ag7_.js') {
+    if (CACHED_JS) {
+      res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
+      return res.end(CACHED_JS);
+    }
     getConfigData().then(configData => {
       const compiled = compileWebsite(configData);
       if (compiled && compiled.js) {
+        CACHED_HTML = compiled.html;
+        CACHED_JS = compiled.js;
         res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
         res.end(compiled.js);
       } else {
