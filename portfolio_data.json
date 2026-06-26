@@ -1,0 +1,188 @@
+{
+  "metadata": {
+    "title": "Nadimul Haque Akib - Portfolio",
+    "description": "MH.dev is the portfolio of Mehedi Hasan, a passionate MERN Stack Developer specializing in building modern, scalable, and high-performance web applications using React, Next.js, Node.js, Express, and MongoDB. Explore Mehedi's projects, skills, and experience in web development, showcasing expertise in creating dynamic and responsive user interfaces, RESTful APIs, and full-stack applications.",
+    "keywords": "Mehedi Hasan,MH.dev,MERN Stack Developer,React Developer,Next.js Developer,Full Stack Developer,Web Developer Portfolio,JavaScript Developer,Node.js Developer,MongoDB Developer",
+    "author": "Nadimul Haque Akib",
+    "og_title": "MH.dev | MERN Stack Developer",
+    "og_description": "Explore the portfolio of Mehedi Hasan, showcasing modern full-stack web applications built with MERN and Next.js.",
+    "og_url": "https://mh-dev.vercel.app",
+    "og_image": "https://mh-dev.vercel.app/og-image.png"
+  },
+  "general": {
+    "name": "Nadimul Haque Akib",
+    "greeting": "Hello, I'm",
+    "avatar": "/images/mehedi.png",
+    "logo": "/logo/logo.png",
+    "favicon": "/favicon.ico",
+    "resume_path": "/resume.pdf",
+    "resume_filename": "MehediHasan.pdf",
+    "working_hours": "Always available",
+    "phone": "+880 123 456 789",
+    "email": "mehedi@example.com",
+    "address": "Dhaka, Bangladesh",
+    "web3forms_key": "595b40dc-1e87-4fe8-bfc4-ae3414b50f6f",
+    "primary_color": "#ff007f",
+    "secondary_color": "#7f00ff",
+    "copyright": "© 2026 MH.dev. All rights reserved."
+  },
+  "hero": {
+    "role": "A Business Development Professional",
+    "bio": "I build scalable, high-performance web applications with modern technologies like MERN stack, focusing on clean UI and seamless user experience.",
+    "facebook": "https://www.facebook.com/akib1122",
+    "github": "https://github.com/mhdevs",
+    "linkedin": "https://www.linkedin.com/in/nh-akib/",
+    "instagram": "https://instagram.com",
+    "greeting": "undefined",
+    "name": "Tafiq Habib Aumi"
+  },
+  "ticker": [
+    {
+      "text": "SALES",
+      "icon": "/images/upload_ticker_0_1782419860190.png"
+    },
+    {
+      "text": "MARKETING",
+      "icon": "/images/upload_ticker_1_1782419860213.png"
+    },
+    {
+      "text": "BUSINESS DEVELOPMENT",
+      "icon": "/images/upload_ticker_2_1782419860217.png"
+    }
+  ],
+  "about": {
+    "title": "About Tafiq",
+    "subtitle": "My Story",
+    "p1": "I am a self-motivated MERN Stack Web Developer. I love building web applications and solving problems with code. My journey started out of curiosity, which quickly grew into a deep passion for programming and software engineering.",
+    "p2": "Over the past years, I have worked on refining my skills in React, Next.js, Express, Node.js, and MongoDB. I focus on writing clean, maintainable, and efficient code, always seeking best practices and performance optimization.",
+    "p3": "I thrive in dynamic team environments and enjoy collaborating on complex software projects. I'm dedicated to continuous learning and keeping up-to-date with current web technologies to build solutions that users love.",
+    "bullets": [
+      {
+        "label": "Frontend Magic",
+        "text": "Crafting responsive and interactive UI/UX using React.js, Tailwind CSS, and HTML5/CSS3."
+      },
+      {
+        "label": "Backend Power",
+        "text": "Building scalable server-side applications and RESTful APIs with Node.js and Express.js."
+      },
+      {
+        "label": "Database Management",
+        "text": "Designing structured and efficient data models using MongoDB and Mongoose."
+      }
+    ],
+    "experience_years": "2+",
+    "completed_projects": "15+",
+    "happy_clients": "10+",
+    "image": "/images/mehedi.png"
+  },
+  "skills": {
+    "brain_image": "/images/brain.png",
+    "inner_ring": [
+      {
+        "name": "HTML",
+        "icon": "/icons/html.png"
+      },
+      {
+        "name": "CSS",
+        "icon": "/icons/css.png"
+      },
+      {
+        "name": "JS",
+        "icon": "/icons/js.png"
+      },
+      {
+        "name": "Redux",
+        "icon": "/icons/redux.png"
+      },
+      {
+        "name": "Tailwind",
+        "icon": "/icons/tailwind.png"
+      },
+      {
+        "name": "Next.js",
+        "icon": "/icons/next2.png"
+      },
+      {
+        "name": "Figma",
+        "icon": "/icons/figma.png"
+      }
+    ],
+    "outer_ring": [
+      {
+        "name": "Express",
+        "icon": "/icons/express.png"
+      },
+      {
+        "name": "Node",
+        "icon": "/icons/node.png"
+      },
+      {
+        "name": "MongoDB",
+        "icon": "/icons/mongo.png"
+      },
+      {
+        "name": "Mongoose",
+        "icon": "/icons/mongoose.png"
+      },
+      {
+        "name": "TS",
+        "icon": "/icons/ts.png"
+      },
+      {
+        "name": "JWT",
+        "icon": "/icons/jwt.png"
+      }
+    ]
+  },
+  "projects": [
+    {
+      "id": "01",
+      "title": "Laivaly",
+      "subtitle": "A modern full-stack clothing e-commerce platform",
+      "description": "Laivaly is a full-stack clothing e-commerce web application built using the MERN stack. It allows users to browse products, add to cart, and securely complete purchases using multiple payment methods. The platform includes a dedicated backend server for handling authentication, orders, and payments.",
+      "features": [
+        "User authentication with JWT & protected routes",
+        "Add to cart & wishlist functionality",
+        "Secure checkout with Stripe, PayPal & COD",
+        "Order management system",
+        "Admin dashboard for product & order control",
+        "Responsive and modern UI"
+      ],
+      "tech_stack": {
+        "frontend": "Next.js, TypeScript, Tailwind CSS, ShadcnUI.",
+        "backend": "Node.js, Express.js, TypeScript.",
+        "database": "MongoDB (Mongoose)."
+      },
+      "links": {
+        "client_repo": "http://client.laivaly.com",
+        "server_repo": "http://server.laivaly.com",
+        "live_site": "http://client.laivaly.com"
+      },
+      "image": "/projects/laivaly.png"
+    }
+  ],
+  "qualifications": [
+    {
+      "title": "Secondary School Certificate (SSC)",
+      "organization": "Haider Ali High School and College",
+      "year": "2016-2018",
+      "description": "Completed secondary education with a Science background, building strong fundamentals in Mathematics, English, and ICT. Developed early analytical and problem-solving skills.",
+      "logo": "/logo/HASC.png"
+    },
+    {
+      "title": "Higher Secondary Certificate (HSC)",
+      "organization": "Uttara High School and College",
+      "year": "2018-2020",
+      "description": "Continued academic journey in Science, strengthening knowledge in mathematics and logical reasoning. Developed a deeper interest in technology and computing.",
+      "logo": "/logo/UHSC.png"
+    },
+    {
+      "title": "Bachelor of Science in Computer Science and Engineering",
+      "organization": "Uttara University",
+      "year": "2022-2026",
+      "description": "Specialized in full-stack web development with a strong focus on the MERN stack. Built multiple real-world projects, developing scalable applications and gaining practical experience in modern web technologies.",
+      "logo": "/logo/UU.png"
+    }
+  ],
+  "admin_password": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9"
+}

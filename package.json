@@ -1,0 +1,13 @@
+{
+  "name": "nadimul-haque-akib-portfolio",
+  "version": "1.0.0",
+  "description": "Exact clone of MH.dev Portfolio",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "mongoose": "^9.7.2"
+  }
+}

@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MH.dev | ExtraOrdinary Admin Dashboard</title>
+    <!-- Outfit & Inter Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif']
+                    },
+                    colors: {
+                        primary: '#5227ff',
+                        secondary: '#9277ff',
+                        accent: '#a78bfa',
+                        spaceDark: '#060010',
+                        glassBg: 'rgba(255, 255, 255, 0.03)',
+                        glassBorder: 'rgba(255, 255, 255, 0.08)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #060010;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(82, 39, 255, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(146, 119, 255, 0.08) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+        .heading-font {
+            font-family: 'Outfit', sans-serif;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        .glass-input {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+        .glass-input:focus {
+            border-color: #9277ff;
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 0 15px rgba(146, 119, 255, 0.25);
+            outline: none;
+        }
+        .tab-btn {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            color: #fff;
+            background: rgba(146, 119, 255, 0.15);
+            border-color: rgba(146, 119, 255, 0.4);
+        }
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top: 3px solid #9277ff;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-10px) scale(1.02); }
+        }
+        .float-card {
+            animation: float 6s ease-in-out infinite;
+        }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #060010;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(146, 119, 255, 0.2);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(146, 119, 255, 0.4);
+        }
+    </style>
+</head>
+<body class="text-gray-100 antialiased min-h-screen pb-20">
+
+    <!-- Auth Protection Page -->
+    <div id="loginOverlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-[#060010]/80 backdrop-blur-xl transition-all duration-500">
+        <div id="loginCard" class="w-full max-w-md glass-panel p-8 rounded-3xl shadow-2xl mx-4 transition-all duration-300 transform scale-100 float-card">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-gradient-to-tr from-primary to-secondary rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-primary/30 mb-4">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <h2 class="text-3xl font-bold heading-font text-white tracking-wide">Dashboard Lock</h2>
+                <p class="text-sm text-gray-400 mt-2">Enter your security key to access the portfolio compiler.</p>
+            </div>
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Password Key</label>
+                    <input type="password" id="passwordInput" class="w-full px-4 py-3 rounded-xl glass-input tracking-widest text-center" placeholder="••••••••" required>
+                </div>
+                <button type="submit" id="loginBtn" class="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 active:scale-[0.98] text-white py-3 rounded-xl font-semibold shadow-lg shadow-primary/25 transition duration-300 flex items-center justify-center min-h-[48px]">
+                    <span id="loginBtnText">Unlock Dashboard</span>
+                    <div id="loginSpinner" class="spinner hidden"></div>
+                </button>
+                <p id="loginError" class="text-red-400 text-sm font-semibold text-center hidden">Access Denied! Incorrect security key.</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard Core Grid -->
+    <div id="dashboardContainer" class="max-w-7xl mx-auto px-4 md:px-8 pt-10 hidden">
+        <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-6 border-b border-white/5">
+            <div>
+                <div class="flex items-center gap-3">
+                    <span class="w-3.5 h-3.5 bg-green-500 rounded-full animate-ping"></span>
+                    <span class="text-xs font-bold tracking-widest text-secondary uppercase bg-secondary/10 px-2.5 py-1 rounded-full border border-secondary/20">Portfolio Live Engine</span>
+                </div>
+                <h1 class="text-4xl font-extrabold text-white heading-font mt-2 tracking-tight">MH.dev Compiler Node</h1>
+                <p class="text-gray-400 text-sm mt-1">Reconfigure layout, content, projects, orbiting tech rings, and documents on the fly.</p>
+            </div>
+            <div class="flex items-center gap-4 w-full md:w-auto">
+                <button id="logoutBtn" class="bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 px-5 py-3 rounded-xl font-medium transition duration-300 text-sm flex items-center gap-2 active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    Lock Node
+                </button>
+                <button id="globalSaveBtn" class="flex-1 md:flex-initial bg-gradient-to-r from-primary to-secondary hover:opacity-95 text-white px-8 py-3 rounded-xl font-semibold shadow-lg shadow-primary/20 transition duration-300 flex items-center justify-center gap-2 active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                    <span id="globalSaveBtnText">Compile & Deploy</span>
+                    <div id="globalSaveSpinner" class="spinner hidden"></div>
+                </button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Sidebar Nav tabs -->
+            <aside class="lg:col-span-1 space-y-2">
+                <div class="glass-panel p-4 rounded-2xl flex flex-col gap-1">
+                    <h3 class="text-xs font-semibold text-gray-400 tracking-widest uppercase px-3 mb-2">Category Tabs</h3>
+                    <button data-tab="tab-meta" class="tab-btn active text-left px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 border border-transparent text-sm font-medium flex items-center gap-3">
+                        🌐 General & SEO
+                    </button>
+                    <button data-tab="tab-hero" class="tab-btn text-left px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 border border-transparent text-sm font-medium flex items-center gap-3">
+                        👋 Hero Section
+                    </button>
+                    <button data-tab="tab-about" class="tab-btn text-left px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 border border-transparent text-sm font-medium flex items-center gap-3">
+                        ℹ️ About Me
+                    </button>
+                    <button data-tab="tab-skills" class="tab-btn text-left px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 border border-transparent text-sm font-medium flex items-center gap-3">
+                        🧠 Tech Stack Orbits
+                    </button>
+                    <button data-tab="tab-projects" class="tab-btn text-left px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 border border-transparent text-sm font-medium flex items-center gap-3">
+                        💼 Projects Manager
+                    </button>
+                    <button data-tab="tab-quals" class="tab-btn text-left px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 border border-transparent text-sm font-medium flex items-center gap-3">
+                        🎓 Qualifications
+                    </button>
+                    <button data-tab="tab-security" class="tab-btn text-left px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 border border-transparent text-sm font-medium flex items-center gap-3">
+                        🔑 Admin Password
+                    </button>
+                </div>
+
+                <div class="glass-panel p-5 rounded-2xl">
+                    <h4 class="text-sm font-bold text-white heading-font">Deployment Node</h4>
+                    <p class="text-xs text-gray-400 mt-2 leading-relaxed">Saving compiles variables back into raw server code in real-time. Make sure image paths are absolute and tags are closed properly.</p>
+                </div>
+            </aside>
+
+            <!-- Main Content Area Panels -->
+            <main class="lg:col-span-3">
+                <form id="adminForm" class="space-y-8">
+                    
+                    <!-- TAB: General & SEO -->
+                    <div id="tab-meta" class="tab-content space-y-6">
+                        <div class="glass-panel p-6 md:p-8 rounded-3xl space-y-6">
+                            <h2 class="text-2xl font-bold heading-font text-white border-b border-white/5 pb-4">🌐 General Configuration & SEO Metadata</h2>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Website Title</label>
+                                    <input type="text" id="meta_title" class="w-full px-4 py-3 rounded-xl glass-input text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Author</label>
+                                    <input type="text" id="meta_author" class="w-full px-4 py-3 rounded-xl glass-input text-sm">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">SEO Meta Description</label>
+                                    <textarea id="meta_description" rows="3" class="w-full px-4 py-3 rounded-xl glass-input text-sm"></textarea>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">SEO Keywords (comma-separated)</label>
+                                    <input type="text" id="meta_keywords" class="w-full px-4 py-3 rounded-xl glass-input text-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel p-6 md:p-8 rounded-3xl space-y-6">
+                            <h3 class="text-xl font-bold heading-font text-white border-b border-white/5 pb-3">🎨 Theme Styling Colors & Assets</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Primary Accent Color (e.g. #5227ff)</label>
+                                    <div class="flex gap-3">
+                                        <input type="color" id="style_primary_picker" class="w-12 h-12 rounded-xl bg-transparent border-0 cursor-pointer">
+                                        <input type="text" id="style_primary" class="w-full px-4 py-3 rounded-xl glass-input text-sm uppercase">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Secondary Accent Color (e.g. #9277ff)</label>
+                                    <div class="flex gap-3">
+                                        <input type="color" id="style_secondary_picker" class="w-12 h-12 rounded-xl bg-transparent border-0 cursor-pointer">
+                                        <input type="text" id="style_secondary" class="w-full px-4 py-3 rounded-xl glass-input text-sm uppercase">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <!-- File Uploaders -->
+                                <div class="space-y-2">
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest">Logo Image</label>
+                                    <div class="border border-dashed border-white/10 hover:border-secondary/50 rounded-xl p-4 flex flex-col items-center justify-center bg-white/5 relative min-h-[140px] transition">
+                                        <input type="file" id="upload_logo" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+                                        <img id="prev_logo" class="w-10 h-10 object-contain mb-2" src="">
+                                        <span class="text-xs text-gray-400">Click to upload</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest">Favicon (.ico)</label>
+                                    <div class="border border-dashed border-white/10 hover:border-secondary/50 rounded-xl p-4 flex flex-col items-center justify-center bg-white/5 relative min-h-[140px] transition">
+                                        <input type="file" id="upload_favicon" accept="image/x-icon" class="absolute inset-0 opacity-0 cursor-pointer">
+                                        <img id="prev_favicon" class="w-8 h-8 object-contain mb-2" src="">
+                                        <span class="text-xs text-gray-400">Click to upload</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest">Resume PDF File</label>
+                                    <div class="border border-dashed border-white/10 hover:border-secondary/50 rounded-xl p-4 flex flex-col items-center justify-center bg-white/5 relative min-h-[140px] transition">
+                                        <input type="file" id="upload_resume" accept="application/pdf" class="absolute inset-0 opacity-0 cursor-pointer">
+                                        <span class="text-2xl mb-2">📄</span>
+                                        <span id="prev_resume_name" class="text-xs text-gray-300 font-medium truncate w-full text-center">resume.pdf</span>
+                                        <span class="text-[10px] text-gray-400 mt-1">Upload New PDF</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel p-6 md:p-8 rounded-3xl space-y-6">
+                            <h3 class="text-xl font-bold heading-font text-white border-b border-white/5 pb-3">🔗 Web3Forms Contact Integration</h3>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Web3Forms Access Key</label>
+                                <input type="text" id="web3forms_key" class="w-full px-4 py-3 rounded-xl glass-input text-sm" placeholder="8e94a8c2-...">
+                                <p class="text-xs text-gray-400 mt-2">Required to make the Contact Form deliver emails to your inbox. Get a free key at web3forms.com.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB: Hero Section -->
+                    <div id="tab-hero" class="tab-content space-y-6 hidden">
+                        <div class="glass-panel p-6 md:p-8 rounded-3xl space-y-6">
+                            <h2 class="text-2xl font-bold heading-font text-white border-b border-white/5 pb-4">👋 Hero Section Customizer</h2>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Greeting (e.g. Hello, I'm)</label>
+                                    <input type="text" id="hero_greeting" class="w-full px-4 py-3 rounded-xl glass-input text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Developer Name</label>
+                                    <input type="text" id="hero_name" class="w-full px-4 py-3 rounded-xl glass-input text-sm">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Professional Subtitle/Roles</label>
+                                    <input type="text" id="hero_role" class="w-full px-4 py-3 rounded-xl glass-input text-sm" placeholder="e.g. A MERN-Stack Web Developer">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Hero Short Bio Description</label>
+                                    <textarea id="hero_bio" rows="3" class="w-full px-4 py-3 rounded-xl glass-input text-sm"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel p-6 md:p-8 rounded-3xl space-y-6">
+                            <h3 class="text-xl font-bold heading-font text-white border-b border-white/5 pb-3">🔗 Social Channels Configuration</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Facebook URL</label>
+                                    <input type="url" id="social_facebook" class="w-full px-4 py-3 rounded-xl glass-input text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">GitHub URL</label>
+                                    <input type="url" id="social_github" class="w-full px-4 py-3 rounded-xl glass-input text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">LinkedIn URL</label>
+                                    <input type="url" id="social_linkedin" class="w-full px-4 py-3 rounded-xl glass-input text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Instagram URL</label>
+                                    <input type="url" id="social_instagram" class="w-full px-4 py-3 rounded-xl glass-input text-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel p-6 md:p-8 rounded-3xl space-y-6">
+                            <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                                <h3 class="text-xl font-bold heading-font text-white">📝 Horizontal Ticker Marquee</h3>
+                                <button type="button" id="addTickerBtn" class="bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs px-3.5 py-2 rounded-xl transition font-medium">Add Ticker Item</button>
+                            </div>
+                            <div id="tickerManagerContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                        </div>
+                    </div>
+
+                    <!-- TAB: About Me -->
+                    <div id="tab-about" class="tab-content space-y-6 hidden">
+                        <div class="glass-panel p-6 md:p-8 rounded-3xl space-y-6">
+                            <h2 class="text-2xl font-bold heading-font text-white border-b border-white/5 pb-4">ℹ️ About Me Customizer</h2>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Section Header</label>
+                                    <input type="text" id="about_title" class="w-full px-4 py-3 rounded-xl glass-input text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Section Subtitle</label>
+                                    <input type="text" id="about_subtitle" class="w-full px-4 py-3 rounded-xl glass-input text-sm">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Story Intro Paragraph</label>
+                                    <textarea id="about_p1" rows="3" class="w-full px-4 py-3 rounded-xl glass-input text-sm"></textarea>
+                                </div>
+                                <div class="md:col-span-2 space-y-4">
+                                    <div class="flex justify-between items-center">
+                                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest">Key Skill Bullets</label>
+                                        <button type="button" id="addAboutBulletBtn" class="bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs px-3.5 py-1.5 rounded-lg transition font-medium">Add Bullet</button>
+                                    </div>
+                                    <div id="aboutBulletsContainer" class="space-y-3"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel p-6 md:p-8 rounded-3xl space-y-6">
+                            <h3 class="text-xl font-bold heading-font text-white border-b border-white/5 pb-3">Portrait Image</h3>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Portrait Image Upload</label>
+                                <div class="flex gap-4 items-center">
+                                    <div class="border border-white/10 w-20 h-20 rounded-xl relative overflow-hidden bg-white/5 flex items-center justify-center">
+                                        <input type="file" id="upload_avatar" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+                                        <img id="prev_avatar" class="w-full h-full object-cover" src="">
+                                    </div>
+                                    <span class="text-xs text-gray-400">Click avatar box to upload and replace portrait</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB: Orbiting Skills -->
+                    <div id="tab-skills" class="tab-content space-y-6 hidden">
+                        <div class="glass-panel p-6 md:p-8 rounded-3xl space-y-6">
+                            <h2 class="text-2xl font-bold heading-font text-white border-b border-white/5 pb-4">🧠 Orbiting Skills Configuration</h2>
+                            <div class="flex gap-6 items-center">
+                                <div class="border border-white/10 w-24 h-24 rounded-2xl relative overflow-hidden bg-white/5 flex items-center justify-center">
+                                    <input type="file" id="upload_brain" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+                                    <img id="prev_brain" class="w-16 h-16 object-contain" src="">
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-white heading-font">Center Brain Graphic</h4>
+                                    <p class="text-xs text-gray-400 mt-1">Upload a custom image to serve as the core glowing mind graphic in the center of the orbits.</p>
+                                </div>
+                            </div>
+
+                            <!-- Inner Ring Orbit -->
+                            <div class="space-y-4 pt-4 border-t border-white/5">
+                                <div class="flex justify-between items-center">
+                                    <h3 class="text-lg font-bold text-white heading-font">⚡ Inner Orbit Ring (Slow rotation)</h3>
+                                    <button type="button" id="addInnerSkillBtn" class="bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs px-3.5 py-2 rounded-xl transition font-medium">Add Skill Icon</button>
+                                </div>
+                                <div id="innerRingContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                            </div>
+
+                            <!-- Outer Ring Orbit -->
+                            <div class="space-y-4 pt-6 border-t border-white/5">
+                                <div class="flex justify-between items-center">
+                                    <h3 class="text-lg font-bold text-white heading-font">🌟 Outer Orbit Ring (Counter rotation)</h3>
+                                    <button type="button" id="addOuterSkillBtn" class="bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs px-3.5 py-2 rounded-xl transition font-medium">Add Skill Icon</button>
+                                </div>
+                                <div id="outerRingContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB: Projects Manager -->
+                    <div id="tab-projects" class="tab-content space-y-6 hidden">
+                        <div class="glass-panel p-6 md:p-8 rounded-3xl space-y-6">
+                            <div class="flex justify-between items-center border-b border-white/5 pb-4">
+                                <h2 class="text-2xl font-bold heading-font text-white">💼 Projects Showcase</h2>
+                                <button type="button" id="addProjectBtn" class="bg-gradient-to-r from-primary to-secondary text-white text-xs px-4 py-2.5 rounded-xl transition font-semibold active:scale-95 shadow-lg shadow-primary/10">Add New Project</button>
+                            </div>
+                            <div id="projectsManagerContainer" class="space-y-8"></div>
+                        </div>
+                    </div>
+
+                    <!-- TAB: Qualifications -->
+                    <div id="tab-quals" class="tab-content space-y-6 hidden">
+                        <div class="glass-panel p-6 md:p-8 rounded-3xl space-y-6">
+                            <div class="flex justify-between items-center border-b border-white/5 pb-4">
+                                <h2 class="text-2xl font-bold heading-font text-white">🎓 Education, Experience & Journey</h2>
+                                <button type="button" id="addQualBtn" class="bg-gradient-to-r from-primary to-secondary text-white text-xs px-4 py-2.5 rounded-xl transition font-semibold active:scale-95 shadow-lg shadow-primary/10">Add Journey Step</button>
+                            </div>
+                            <div id="qualsManagerContainer" class="space-y-6"></div>
+                        </div>
+                    </div>
+
+                    <!-- TAB: Password -->
+                    <div id="tab-security" class="tab-content space-y-6 hidden">
+                        <div class="glass-panel p-6 md:p-8 rounded-3xl space-y-6">
+                            <h2 class="text-2xl font-bold heading-font text-white border-b border-white/5 pb-4">🔑 Access Security Settings</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">New Admin Password</label>
+                                    <input type="password" id="new_password" class="w-full px-4 py-3 rounded-xl glass-input text-sm" placeholder="••••••••">
+                                    <p class="text-xs text-gray-400 mt-2">Leave empty to keep your current security password key.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Footer Bar -->
+                    <div class="glass-panel p-5 rounded-3xl flex items-center justify-between shadow-xl">
+                        <p id="statusMessage" class="text-sm font-semibold opacity-0 transition-opacity duration-300"></p>
+                        <button type="submit" id="saveBtn" class="bg-gradient-to-r from-primary to-secondary hover:opacity-95 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-primary/25 transition duration-300 flex items-center justify-center gap-2 active:scale-95">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                            <span id="btnText">Save & Compile</span>
+                            <div id="btnSpinner" class="spinner hidden"></div>
+                        </button>
+                    </div>
+
+                </form>
+            </main>
+        </div>
+    </div>
+
+    <!-- Compile Success Dialog/Modal -->
+    <div id="successModal" class="fixed inset-0 z-[150] flex items-center justify-center bg-spaceDark/90 backdrop-blur-md hidden transition-all duration-300">
+        <div class="glass-panel p-8 rounded-3xl max-w-sm text-center border border-secondary/30 shadow-2xl shadow-primary/20">
+            <div class="w-16 h-16 bg-green-500/10 border border-green-500/30 text-green-400 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-lg">✓</div>
+            <h3 class="text-xl font-bold heading-font text-white">System Recompiled</h3>
+            <p class="text-sm text-gray-400 mt-2 leading-relaxed">Website compilation was successful. Dynamic HTML layouts, variables, and hydration bundles have been rewritten and updated.</p>
+            <button onclick="document.getElementById('successModal').classList.add('hidden')" class="mt-6 bg-white/5 border border-white/10 hover:bg-white/10 text-white font-medium px-6 py-2.5 rounded-xl text-sm transition">Dismiss</button>
+        </div>
+    </div>
+
+    <!-- JS code -->
+    <script>
+        let currentConfig = {};
+        let sessionToken = localStorage.getItem('admin_token');
+
+        // Setup file reader cache (stores base64 files scheduled for upload)
+        let fileUploadQueue = {};
+
+        // Setup UI Tabs logic
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(p => p.classList.add('hidden'));
+                
+                btn.classList.add('active');
+                const pId = btn.getAttribute('data-tab');
+                document.getElementById(pId).classList.remove('hidden');
+            });
+        });
+
+        // Setup Color Pickers sync
+        function syncColorPicker(pickerId, inputId) {
+            const picker = document.getElementById(pickerId);
+            const input = document.getElementById(inputId);
+            picker.addEventListener('input', () => { input.value = picker.value.toUpperCase(); });
+            input.addEventListener('input', () => { if(/^#[0-9A-F]{6}$/i.test(input.value)) picker.value = input.value; });
+        }
+        syncColorPicker('style_primary_picker', 'style_primary');
+        syncColorPicker('style_secondary_picker', 'style_secondary');
+
+        // Setup File Upload Base64 Listener
+        function registerFileUpload(inputElementId, previewElementId, cacheKey, nameLabelId) {
+            const input = document.getElementById(inputElementId);
+            const preview = document.getElementById(previewElementId);
+            input.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const base64 = event.target.result;
+                    fileUploadQueue[cacheKey] = {
+                        fileName: file.name,
+                        fileData: base64
+                    };
+                    if (preview) {
+                        preview.src = base64;
+                    }
+                    if (nameLabelId) {
+                        document.getElementById(nameLabelId).textContent = file.name;
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        registerFileUpload('upload_logo', 'prev_logo', 'logo');
+        registerFileUpload('upload_favicon', 'prev_favicon', 'favicon');
+        registerFileUpload('upload_resume', null, 'resume', 'prev_resume_name');
+        registerFileUpload('upload_avatar', 'prev_avatar', 'avatar');
+        registerFileUpload('upload_brain', 'prev_brain', 'brain');
+
+        // Initial Security Key check
+        if (sessionToken) {
+            document.getElementById('loginOverlay').classList.add('hidden');
+            document.getElementById('dashboardContainer').classList.remove('hidden');
+            loadConfig();
+        }
+
+        // Login Submit
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const password = document.getElementById('passwordInput').value;
+            const btn = document.getElementById('loginBtn');
+            const btnText = document.getElementById('loginBtnText');
+            const spinner = document.getElementById('loginSpinner');
+            const errorMsg = document.getElementById('loginError');
+
+            btnText.classList.add('hidden');
+            spinner.classList.remove('hidden');
+            btn.disabled = true;
+            errorMsg.classList.add('hidden');
+
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password })
+            })
+            .then(res => {
+                if (res.status === 200) return res.json();
+                throw new Error('Unauthorized');
+            })
+            .then(data => {
+                localStorage.setItem('admin_token', data.token);
+                sessionToken = data.token;
+                document.getElementById('loginCard').style.transform = 'scale(0.95)';
+                document.getElementById('loginOverlay').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loginOverlay').classList.add('hidden');
+                    document.getElementById('dashboardContainer').classList.remove('hidden');
+                    loadConfig();
+                }, 300);
+            })
+            .catch(err => {
+                errorMsg.classList.remove('hidden');
+                const card = document.getElementById('loginCard');
+                card.classList.add('animate-shake');
+                setTimeout(() => card.classList.remove('animate-shake'), 400);
+            })
+            .finally(() => {
+                btnText.classList.remove('hidden');
+                spinner.classList.add('hidden');
+                btn.disabled = false;
+            });
+        });
+
+        // Logout click
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            localStorage.removeItem('admin_token');
+            location.reload();
+        });
+
+        // Load Config API
+        function loadConfig() {
+            fetch('/api/config')
+                .then(res => res.json())
+                .then(data => {
+                    currentConfig = data;
+                    populateDashboard();
+                })
+                .catch(err => console.error('Failed to load configuration:', err));
+        }
+
+        // Fill fields with data
+        function populateDashboard() {
+            // General
+            document.getElementById('meta_title').value = currentConfig.metadata.title;
+            document.getElementById('meta_author').value = currentConfig.metadata.author;
+            document.getElementById('meta_description').value = currentConfig.metadata.description;
+            document.getElementById('meta_keywords').value = currentConfig.metadata.keywords;
+
+            document.getElementById('style_primary').value = currentConfig.general.primary_color;
+            document.getElementById('style_primary_picker').value = currentConfig.general.primary_color;
+            document.getElementById('style_secondary').value = currentConfig.general.secondary_color;
+            document.getElementById('style_secondary_picker').value = currentConfig.general.secondary_color;
+
+            document.getElementById('prev_logo').src = currentConfig.general.logo;
+            document.getElementById('prev_favicon').src = currentConfig.general.favicon;
+            document.getElementById('prev_resume_name').textContent = currentConfig.general.resume_filename;
+            document.getElementById('web3forms_key').value = currentConfig.general.web3forms_key;
+
+            // Hero
+            document.getElementById('hero_greeting').value = currentConfig.general.greeting;
+            document.getElementById('hero_name').value = currentConfig.general.name;
+            document.getElementById('hero_role').value = currentConfig.hero.role;
+            document.getElementById('hero_bio').value = currentConfig.hero.bio;
+
+            document.getElementById('social_facebook').value = currentConfig.hero.facebook;
+            document.getElementById('social_github').value = currentConfig.hero.github;
+            document.getElementById('social_linkedin').value = currentConfig.hero.linkedin;
+            document.getElementById('social_instagram').value = currentConfig.hero.instagram;
+
+            // Ticker Manager
+            renderTickerManager();
+
+            // About
+            document.getElementById('about_title').value = currentConfig.about.title;
+            document.getElementById('about_subtitle').value = currentConfig.about.subtitle;
+            document.getElementById('about_p1').value = currentConfig.about.p1;
+            renderAboutBullets();
+            document.getElementById('prev_avatar').src = currentConfig.about.image;
+
+            // Skills
+            document.getElementById('prev_brain').src = currentConfig.skills.brain_image;
+            renderSkillsRings();
+
+            // Projects
+            renderProjectsManager();
+
+            // Qualifications
+            renderQualificationsManager();
+        }
+
+        // Ticker Renderer
+        function renderTickerManager() {
+            const container = document.getElementById('tickerManagerContainer');
+            container.innerHTML = '';
+            (currentConfig.ticker || []).forEach((item, idx) => {
+                container.appendChild(createTickerCard(item, idx));
+            });
+        }
+
+        function createTickerCard(item, idx) {
+            const card = document.createElement('div');
+            card.className = 'glass-panel p-4 rounded-xl flex items-center justify-between gap-4 border border-white/5';
+            
+            const fileInputId = `upload_ticker_${idx}`;
+            const previewId = `prev_ticker_${idx}`;
+            const key = `ticker_${idx}`;
+            
+            card.innerHTML = `
+                <div class="flex items-center gap-3 w-full">
+                    <div class="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center relative overflow-hidden border border-white/10 shrink-0">
+                        <input type="file" id="${fileInputId}" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+                        <img id="${previewId}" class="w-8 h-8 object-contain" src="${item.icon}">
+                    </div>
+                    <input type="text" value="${item.text}" placeholder="Ticker Word" class="ticker-text-input px-3 py-2 w-full rounded-lg glass-input text-xs">
+                </div>
+                <button type="button" class="text-red-400 hover:text-red-300 font-bold px-2 py-1 text-lg active:scale-95 select-none remove-ticker-btn">×</button>
+            `;
+
+            setTimeout(() => {
+                registerFileUpload(fileInputId, previewId, key);
+                card.querySelector('.remove-ticker-btn').addEventListener('click', () => {
+                    currentConfig.ticker.splice(idx, 1);
+                    renderTickerManager();
+                });
+            }, 10);
+
+            return card;
+        }
+
+        document.getElementById('addTickerBtn').addEventListener('click', () => {
+            if(!currentConfig.ticker) currentConfig.ticker = [];
+            currentConfig.ticker.push({ text: 'New Item', icon: '/icons/html.png' });
+            renderTickerManager();
+        });
+
+        // About Bullets Renderer
+        function renderAboutBullets() {
+            const container = document.getElementById('aboutBulletsContainer');
+            container.innerHTML = '';
+            (currentConfig.about.bullets || []).forEach((bullet, idx) => {
+                const row = document.createElement('div');
+                row.className = 'glass-panel p-4 rounded-xl flex items-center justify-between gap-4 border border-white/5';
+                row.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 w-full">
+                        <input type="text" value="${bullet.label}" placeholder="Label (e.g. Frontend Magic)" class="bullet-label px-3 py-2 rounded-lg glass-input text-xs">
+                        <input type="text" value="${bullet.text}" placeholder="Text description" class="bullet-text md:col-span-2 px-3 py-2 rounded-lg glass-input text-xs">
+                    </div>
+                    <button type="button" class="text-red-400 hover:text-red-300 font-bold px-2 py-1 text-lg active:scale-95 remove-bullet-btn">×</button>
+                `;
+                row.querySelector('.remove-bullet-btn').addEventListener('click', () => {
+                    currentConfig.about.bullets.splice(idx, 1);
+                    renderAboutBullets();
+                });
+                container.appendChild(row);
+            });
+        }
+
+        document.getElementById('addAboutBulletBtn').addEventListener('click', () => {
+            if(!currentConfig.about.bullets) currentConfig.about.bullets = [];
+            currentConfig.about.bullets.push({ label: 'Key Skill', text: 'Detail description here.' });
+            renderAboutBullets();
+        });
+
+        // Skills Ring Renderer
+        function renderSkillsRings() {
+            const innerCon = document.getElementById('innerRingContainer');
+            innerCon.innerHTML = '';
+            currentConfig.skills.inner_ring.forEach((skill, idx) => {
+                innerCon.appendChild(createSkillUIRow(skill, idx, 'inner'));
+            });
+
+            const outerCon = document.getElementById('outerRingContainer');
+            outerCon.innerHTML = '';
+            currentConfig.skills.outer_ring.forEach((skill, idx) => {
+                outerCon.appendChild(createSkillUIRow(skill, idx, 'outer'));
+            });
+        }
+
+        function createSkillUIRow(skill, idx, ringType) {
+            const card = document.createElement('div');
+            card.className = 'glass-panel p-4 rounded-xl flex items-center justify-between gap-4 border border-white/5';
+            
+            const fileInputId = `upload_skill_${ringType}_${idx}`;
+            const previewId = `prev_skill_${ringType}_${idx}`;
+            const key = `skill_${ringType}_${idx}`;
+            
+            card.innerHTML = `
+                <div class="flex items-center gap-3 w-full">
+                    <div class="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center relative overflow-hidden border border-white/10 shrink-0">
+                        <input type="file" id="${fileInputId}" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+                        <img id="${previewId}" class="w-8 h-8 object-contain" src="${skill.icon}">
+                    </div>
+                    <input type="text" value="${skill.name}" placeholder="Skill Name" class="skill-name-input px-3 py-2 w-full rounded-lg glass-input text-xs">
+                </div>
+                <button type="button" class="text-red-400 hover:text-red-300 font-bold px-2 py-1 text-lg active:scale-95 select-none remove-skill-btn">×</button>
+            `;
+
+            // Setup local file reader
+            setTimeout(() => {
+                registerFileUpload(fileInputId, previewId, key);
+                card.querySelector('.remove-skill-btn').addEventListener('click', () => {
+                    if (ringType === 'inner') {
+                        currentConfig.skills.inner_ring.splice(idx, 1);
+                    } else {
+                        currentConfig.skills.outer_ring.splice(idx, 1);
+                    }
+                    renderSkillsRings();
+                });
+            }, 10);
+
+            return card;
+        }
+
+        document.getElementById('addInnerSkillBtn').addEventListener('click', () => {
+            currentConfig.skills.inner_ring.push({ name: 'New Skill', icon: '/icons/html.png' });
+            renderSkillsRings();
+        });
+
+        document.getElementById('addOuterSkillBtn').addEventListener('click', () => {
+            currentConfig.skills.outer_ring.push({ name: 'New Skill', icon: '/icons/html.png' });
+            renderSkillsRings();
+        });
+
+        // Projects Manager Render
+        function renderProjectsManager() {
+            const container = document.getElementById('projectsManagerContainer');
+            container.innerHTML = '';
+            currentConfig.projects.forEach((proj, idx) => {
+                container.appendChild(createProjectCard(proj, idx));
+            });
+        }
+
+        function createProjectCard(proj, idx) {
+            const card = document.createElement('div');
+            card.className = 'glass-panel p-6 rounded-2xl space-y-4 border border-white/5';
+            
+            const fileInputId = `upload_proj_${idx}`;
+            const previewId = `prev_proj_${idx}`;
+            const key = `proj_${idx}`;
+            
+            card.innerHTML = `
+                <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                    <h3 class="font-bold heading-font text-white">Project #${idx + 1} - ${proj.title || 'Untitled'}</h3>
+                    <button type="button" class="text-red-400 hover:text-red-300 text-xs font-semibold px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-lg active:scale-95 delete-proj-btn">Delete Project</button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-2 space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Title</label>
+                                <input type="text" class="proj-title w-full px-3 py-2 rounded-lg glass-input text-xs" value="${proj.title}">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Subtitle</label>
+                                <input type="text" class="proj-subtitle w-full px-3 py-2 rounded-lg glass-input text-xs" value="${proj.subtitle}">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Description</label>
+                            <textarea class="proj-desc w-full px-3 py-2 rounded-lg glass-input text-xs" rows="3">${proj.description}</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Features (one per line)</label>
+                            <textarea class="proj-features w-full px-3 py-2 rounded-lg glass-input text-xs" rows="3">${(proj.features || []).join('\n')}</textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">Screenshot</label>
+                            <div class="border border-dashed border-white/10 rounded-xl p-4 flex flex-col items-center justify-center bg-white/5 relative min-h-[140px]">
+                                <input type="file" id="${fileInputId}" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+                                <img id="${previewId}" class="w-full h-24 object-cover rounded-md mb-2" src="${proj.image}">
+                                <span class="text-[10px] text-gray-400">Replace Screenshot</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Frontend Tech Stack (comma separated)</label>
+                        <input type="text" class="proj-tech-fe w-full px-3 py-2 rounded-lg glass-input text-xs" value="${proj.tech_stack.frontend}">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Backend Tech Stack (comma separated)</label>
+                        <input type="text" class="proj-tech-be w-full px-3 py-2 rounded-lg glass-input text-xs" value="${proj.tech_stack.backend}">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Database</label>
+                        <input type="text" class="proj-tech-db w-full px-3 py-2 rounded-lg glass-input text-xs" value="${proj.tech_stack.database}">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Live Site URL</label>
+                        <input type="url" class="proj-link-live w-full px-3 py-2 rounded-lg glass-input text-xs" value="${proj.links.live_site}">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Client GitHub Repo</label>
+                        <input type="url" class="proj-link-client w-full px-3 py-2 rounded-lg glass-input text-xs" value="${proj.links.client_repo}">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Server GitHub Repo</label>
+                        <input type="url" class="proj-link-server w-full px-3 py-2 rounded-lg glass-input text-xs" value="${proj.links.server_repo}">
+                    </div>
+                </div>
+            `;
+
+            setTimeout(() => {
+                registerFileUpload(fileInputId, previewId, key);
+                card.querySelector('.delete-proj-btn').addEventListener('click', () => {
+                    currentConfig.projects.splice(idx, 1);
+                    renderProjectsManager();
+                });
+            }, 10);
+
+            return card;
+        }
+
+        document.getElementById('addProjectBtn').addEventListener('click', () => {
+            currentConfig.projects.push({
+                title: 'New Project',
+                subtitle: 'A dynamic application',
+                description: 'Detailed project description here.',
+                features: ['Feature number one', 'Feature number two'],
+                tech_stack: { frontend: 'React, Tailwind', backend: 'Node.js, Express', database: 'MongoDB' },
+                links: { live_site: 'http://', client_repo: 'http://', server_repo: 'http://' },
+                image: '/projects/laivaly.png'
+            });
+            renderProjectsManager();
+        });
+
+        // Qualifications timeline renderer
+        function renderQualificationsManager() {
+            const container = document.getElementById('qualsManagerContainer');
+            container.innerHTML = '';
+            currentConfig.qualifications.forEach((qual, idx) => {
+                container.appendChild(createQualCard(qual, idx));
+            });
+        }
+
+        function createQualCard(qual, idx) {
+            const card = document.createElement('div');
+            card.className = 'glass-panel p-6 rounded-2xl space-y-4 border border-white/5';
+            
+            const fileInputId = `upload_qual_${idx}`;
+            const previewId = `prev_qual_${idx}`;
+            const key = `qual_${idx}`;
+            
+            card.innerHTML = `
+                <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                    <h3 class="font-bold heading-font text-white">Journey Step #${idx + 1} - ${qual.title || 'Untitled'}</h3>
+                    <button type="button" class="text-red-400 hover:text-red-300 text-xs font-semibold px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-lg active:scale-95 delete-qual-btn">Delete Step</button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="flex flex-col items-center justify-center">
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2 text-center w-full">Institution Logo</label>
+                        <div class="border border-white/10 w-20 h-20 rounded-xl relative overflow-hidden bg-white/5 flex items-center justify-center shrink-0">
+                            <input type="file" id="${fileInputId}" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+                            <img id="${previewId}" class="w-16 h-16 object-contain" src="${qual.logo}">
+                        </div>
+                        <span class="text-[9px] text-gray-400 mt-1">Upload Icon</span>
+                    </div>
+
+                    <div class="md:col-span-3 space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Title / Degree</label>
+                                <input type="text" class="qual-title w-full px-3 py-2 rounded-lg glass-input text-xs" value="${qual.title}">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Institution / Company</label>
+                                <input type="text" class="qual-org w-full px-3 py-2 rounded-lg glass-input text-xs" value="${qual.organization}">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Duration Year (e.g. 2022-2026)</label>
+                                <input type="text" class="qual-year w-full px-3 py-2 rounded-lg glass-input text-xs" value="${qual.year}">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Short Description</label>
+                            <textarea class="qual-desc w-full px-3 py-2 rounded-lg glass-input text-xs" rows="2">${qual.description}</textarea>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            setTimeout(() => {
+                registerFileUpload(fileInputId, previewId, key);
+                card.querySelector('.delete-qual-btn').addEventListener('click', () => {
+                    currentConfig.qualifications.splice(idx, 1);
+                    renderQualificationsManager();
+                });
+            }, 10);
+
+            return card;
+        }
+
+        document.getElementById('addQualBtn').addEventListener('click', () => {
+            currentConfig.qualifications.push({
+                title: 'Timeline Event',
+                organization: 'Institution Name',
+                year: '2025-Present',
+                description: 'Describe the journey steps completed here.',
+                logo: '/logo/UU.png'
+            });
+            renderQualificationsManager();
+        });
+
+        // Dynamic Form Save Logic
+        function readFieldsAndCompile() {
+            // General settings
+            currentConfig.metadata.title = document.getElementById('meta_title').value;
+            currentConfig.metadata.author = document.getElementById('meta_author').value;
+            currentConfig.metadata.description = document.getElementById('meta_description').value;
+            currentConfig.metadata.keywords = document.getElementById('meta_keywords').value;
+
+            currentConfig.general.primary_color = document.getElementById('style_primary').value;
+            currentConfig.general.secondary_color = document.getElementById('style_secondary').value;
+            currentConfig.general.web3forms_key = document.getElementById('web3forms_key').value;
+
+            // Hero settings
+            currentConfig.general.greeting = document.getElementById('hero_greeting').value;
+            currentConfig.general.name = document.getElementById('hero_name').value;
+            currentConfig.hero.role = document.getElementById('hero_role').value;
+            currentConfig.hero.bio = document.getElementById('hero_bio').value;
+
+            currentConfig.hero.facebook = document.getElementById('social_facebook').value;
+            currentConfig.hero.github = document.getElementById('social_github').value;
+            currentConfig.hero.linkedin = document.getElementById('social_linkedin').value;
+            currentConfig.hero.instagram = document.getElementById('social_instagram').value;
+
+            // Read Ticker Inputs
+            const tickerRows = document.querySelectorAll('#tickerManagerContainer .ticker-text-input');
+            tickerRows.forEach((row, idx) => {
+                currentConfig.ticker[idx].text = row.value;
+            });
+
+            // About settings
+            currentConfig.about.title = document.getElementById('about_title').value;
+            currentConfig.about.subtitle = document.getElementById('about_subtitle').value;
+            currentConfig.about.p1 = document.getElementById('about_p1').value;
+            
+            currentConfig.about.bullets = [];
+            const bulletRows = document.querySelectorAll('#aboutBulletsContainer > div');
+            bulletRows.forEach(row => {
+                currentConfig.about.bullets.push({
+                    label: row.querySelector('.bullet-label').value,
+                    text: row.querySelector('.bullet-text').value
+                });
+            });
+
+            // Read Skills Inputs
+            const innerRows = document.querySelectorAll('#innerRingContainer .skill-name-input');
+            innerRows.forEach((row, idx) => {
+                currentConfig.skills.inner_ring[idx].name = row.value;
+            });
+            const outerRows = document.querySelectorAll('#outerRingContainer .skill-name-input');
+            outerRows.forEach((row, idx) => {
+                currentConfig.skills.outer_ring[idx].name = row.value;
+            });
+
+            // Read Projects Inputs
+            const projCards = document.querySelectorAll('#projectsManagerContainer > div');
+            projCards.forEach((card, idx) => {
+                currentConfig.projects[idx].title = card.querySelector('.proj-title').value;
+                currentConfig.projects[idx].subtitle = card.querySelector('.proj-subtitle').value;
+                currentConfig.projects[idx].description = card.querySelector('.proj-desc').value;
+                currentConfig.projects[idx].features = card.querySelector('.proj-features').value.split('\n').map(s => s.trim()).filter(Boolean);
+                currentConfig.projects[idx].tech_stack.frontend = card.querySelector('.proj-tech-fe').value;
+                currentConfig.projects[idx].tech_stack.backend = card.querySelector('.proj-tech-be').value;
+                currentConfig.projects[idx].tech_stack.database = card.querySelector('.proj-tech-db').value;
+                currentConfig.projects[idx].links.live_site = card.querySelector('.proj-link-live').value;
+                currentConfig.projects[idx].links.client_repo = card.querySelector('.proj-link-client').value;
+                currentConfig.projects[idx].links.server_repo = card.querySelector('.proj-link-server').value;
+            });
+
+            // Read Qualifications timeline
+            const qualCards = document.querySelectorAll('#qualsManagerContainer > div');
+            qualCards.forEach((card, idx) => {
+                currentConfig.qualifications[idx].title = card.querySelector('.qual-title').value;
+                currentConfig.qualifications[idx].organization = card.querySelector('.qual-org').value;
+                currentConfig.qualifications[idx].year = card.querySelector('.qual-year').value;
+                currentConfig.qualifications[idx].description = card.querySelector('.qual-desc').value;
+            });
+
+            // Read Password change
+            const newPassword = document.getElementById('new_password').value.trim();
+            if (newPassword) {
+                currentConfig.new_password = newPassword;
+            } else {
+                delete currentConfig.new_password;
+            }
+        }
+
+        // Global Form Submission Event
+        document.getElementById('adminForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            triggerCompileAndDeploy();
+        });
+
+        // Trigger compilation from headers or bottom bar
+        document.getElementById('globalSaveBtn').addEventListener('click', triggerCompileAndDeploy);
+
+        async function triggerCompileAndDeploy() {
+            const btn = document.getElementById('saveBtn');
+            const btnTop = document.getElementById('globalSaveBtn');
+            const btnText = document.getElementById('btnText');
+            const btnTextTop = document.getElementById('globalSaveBtnText');
+            const spinner = document.getElementById('btnSpinner');
+            const spinnerTop = document.getElementById('globalSaveSpinner');
+            const statusMessage = document.getElementById('statusMessage');
+
+            btn.disabled = true;
+            btnTop.disabled = true;
+            btnText.classList.add('hidden');
+            spinner.classList.remove('hidden');
+            btnTextTop.classList.add('hidden');
+            spinnerTop.classList.remove('hidden');
+
+            statusMessage.textContent = 'Uploading files and compiling settings...';
+            statusMessage.className = 'text-accent font-semibold opacity-100 transition-opacity duration-300';
+
+            // Gather inputs
+            readFieldsAndCompile();
+
+            // 1. Upload files first if any are queued
+            const uploadKeys = Object.keys(fileUploadQueue);
+            if (uploadKeys.length > 0) {
+                statusMessage.textContent = `Uploading ${uploadKeys.length} assets...`;
+                for (const key of uploadKeys) {
+                    try {
+                        const fileObj = fileUploadQueue[key];
+                        const res = await fetch('/api/upload', {
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Bearer ' + sessionToken
+                            },
+                            body: JSON.stringify({
+                                uploadKey: key,
+                                fileName: fileObj.fileName,
+                                fileData: fileObj.fileData
+                            })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            // Update local config paths to newly created files
+                            updateConfigAssetPath(key, data.filePath);
+                        } else {
+                            throw new Error(data.error);
+                        }
+                    } catch (err) {
+                        statusMessage.textContent = `Asset upload failed: ${key}. Compile aborted.`;
+                        statusMessage.className = 'text-red-400 font-semibold opacity-100';
+                        resetButtonStates();
+                        return;
+                    }
+                }
+                // Clear queue
+                fileUploadQueue = {};
+            }
+
+            // 2. Submit the dynamic config changes to the server
+            statusMessage.textContent = 'Compiling files on host node...';
+            fetch('/api/config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + sessionToken
+                },
+                body: JSON.stringify(currentConfig)
+            })
+            .then(res => {
+                if (res.status === 401) {
+                    alert('Session expired. Re-authenticate node.');
+                    localStorage.removeItem('admin_token');
+                    location.reload();
+                    return;
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (!data) return;
+                if (data.success) {
+                    statusMessage.textContent = 'Recompilation successful!';
+                    statusMessage.className = 'text-green-400 font-semibold opacity-100 transition-opacity duration-300';
+                    document.getElementById('new_password').value = '';
+                    document.getElementById('successModal').classList.remove('hidden');
+                    loadConfig(); // Refresh values from server
+                } else {
+                    statusMessage.textContent = 'Compilation failed: ' + data.error;
+                    statusMessage.className = 'text-red-400 font-semibold opacity-100';
+                }
+            })
+            .catch(err => {
+                statusMessage.textContent = 'Server connection error.';
+                statusMessage.className = 'text-red-400 font-semibold opacity-100';
+            })
+            .finally(() => {
+                setTimeout(() => statusMessage.classList.replace('opacity-100', 'opacity-0'), 4000);
+                resetButtonStates();
+            });
+
+            function resetButtonStates() {
+                btn.disabled = false;
+                btnTop.disabled = false;
+                btnText.classList.remove('hidden');
+                spinner.classList.add('hidden');
+                btnTextTop.classList.remove('hidden');
+                spinnerTop.classList.add('hidden');
+            }
+        }
+
+        // Helper to map uploaded files to config keys
+        function updateConfigAssetPath(key, path) {
+            if (key === 'logo') currentConfig.general.logo = path;
+            if (key === 'favicon') currentConfig.general.favicon = path;
+            if (key === 'resume') {
+                currentConfig.general.resume_path = path;
+                currentConfig.general.resume_filename = fileUploadQueue[key].fileName;
+            }
+            if (key === 'avatar') currentConfig.about.image = path;
+            if (key === 'brain') currentConfig.skills.brain_image = path;
+            
+            // Orbits mapping
+            if (key.startsWith('skill_')) {
+                const parts = key.split('_');
+                const ringType = parts[1];
+                const idx = parseInt(parts[2]);
+                if (ringType === 'inner') {
+                    currentConfig.skills.inner_ring[idx].icon = path;
+                } else {
+                    currentConfig.skills.outer_ring[idx].icon = path;
+                }
+            }
+
+            // Projects mapping
+            if (key.startsWith('proj_')) {
+                const idx = parseInt(key.split('_')[1]);
+                currentConfig.projects[idx].image = path;
+            }
+
+            // Qualifications mapping
+            if (key.startsWith('qual_')) {
+                const idx = parseInt(key.split('_')[1]);
+                currentConfig.qualifications[idx].logo = path;
+            }
+
+            // Ticker mapping
+            if (key.startsWith('ticker_')) {
+                const idx = parseInt(key.split('_')[1]);
+                currentConfig.ticker[idx].icon = path;
+            }
+        }
+    </script>
+</body>
+</html>
