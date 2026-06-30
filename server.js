@@ -33,6 +33,7 @@ async function connectDB() {
 }
 
 async function getConfigData() {
+  await connectDB();
   if (dbConnected) {
     const doc = await ConfigModel.findOne();
     if (doc && doc.data) return doc.data;
@@ -44,6 +45,7 @@ async function getConfigData() {
 }
 
 async function saveConfigData(newConfig) {
+  await connectDB();
   if (dbConnected) {
     let doc = await ConfigModel.findOne();
     if (doc) {
@@ -275,16 +277,20 @@ function compileWebsite(originalData) {
       <a href="${data.hero.instagram || '#'}" target="_blank" class="flex items-center justify-center text-3xl border-2 border-primary p-3 rounded-full cursor-target hover:scale-125 duration-500 hover:shadow-lg hover:shadow-[#5227ff]/50">
         <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 448 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"></path></svg>
       </a>`;
-  html = html.replace('</head>', `<script>
+  html = html.replace('</body>', `<script>
       window.CUSTOM_TICKER_HTML = ${JSON.stringify(tickerItemsHTML)};
       window.CUSTOM_TICKER_SECTION_HTML = ${JSON.stringify(tickerHTML)};
       window.CUSTOM_HERO_SOCIALS_HTML = ${JSON.stringify(customSocialHTML)};
-    </script></head>`);
+    </script></body>`);
   
   // 6. About Section
   html = replaceBetween(html, '<!-- ABOUT_TITLE_START -->', '<!-- ABOUT_TITLE_END -->', `<h1 class="text-4xl md:text-7xl lg:text-6xl font-extrabold uppercase">${data.about.title}</h1>`);
   html = replaceBetween(html, '<!-- ABOUT_SUBTITLE_START -->', '<!-- ABOUT_SUBTITLE_END -->', `<p class="text-base md:text-lg font-medium">${data.about.subtitle}</p>`);
+  html = html.replace('<!-- ABOUT_RSC_SUBTITLE -->', JSON.stringify(data.about.subtitle).slice(1, -1));
   html = replaceBetween(html, '<!-- ABOUT_P1_START -->', '<!-- ABOUT_P1_END -->', `<p class="text-sm md:text-base py-5 md:py-8 text-justify">${data.about.p1}</p>`);
+  html = html.replace('<!-- ABOUT_RSC_P1 -->', JSON.stringify(data.about.p1).slice(1, -1));
+  html = replaceBetween(html, '<!-- ABOUT_P2_START -->', '<!-- ABOUT_P2_END -->', `<p class="text-sm md:text-base pb-5 md:pb-8 text-justify">${data.about.p2}</p>`);
+  html = html.replace('<!-- ABOUT_RSC_P2 -->', JSON.stringify(data.about.p2).slice(1, -1));
   
   const bulletsHTML = `
     <ul class="p-3 md:p-5 list-inside list-disc space-y-2">
@@ -384,9 +390,9 @@ function compileWebsite(originalData) {
               </ul>
             </div>
           </div>
-          <div class="flex gap-5 mt-5">
-            <a href="${proj.links.client_repo}" class="border px-4 py-2 rounded-lg text-xs hover:bg-white hover:text-black transition" target="_blank" rel="noopener noreferrer">Client Repo</a>
-            <a href="${proj.links.server_repo}" class="border px-4 py-2 rounded-lg text-xs hover:bg-white hover:text-black transition" target="_blank" rel="noopener noreferrer">Server Repo</a>
+          <div class="mt-5 grid grid-cols-2 md:grid-cols-3 gap-2.5 xl:mr-5">
+            <a href="${proj.links.client_repo}" target="_blank" rel="noopener noreferrer" class="border text-center text-xs md:text-base px-5 py-2 rounded-md hover:shadow-2xl hover:shadow-primary/50 transition-shadow duration-300 cursor-target">Client Repository</a>
+            <a href="${proj.links.server_repo}" target="_blank" rel="noopener noreferrer" class="border text-center text-xs md:text-base px-5 py-2 rounded-md hover:shadow-2xl hover:shadow-primary/50 transition-shadow duration-300 cursor-target">Server Repository</a>
           </div>
         </div>
         <div class="xl:w-[50%] flex justify-center items-center">
@@ -943,9 +949,19 @@ function compileWebsite(originalData) {
     
     html = html.replace(/\/images\/brain\.png/g, data.skills.brain_image);
     html = html.replace(/%2Fimages%2Fbrain\.png/g, encodeURIComponent(data.skills.brain_image));
+    html = html.replace(/"WEB3FORMS_KEY_INJECTED_HERE"/g, `"${data.general.web3forms_key || ''}"`);
+
+    const hideCSS = `<style>
+      a[href="${data.hero.github}"] { display: none !important; }
+      a[href="${data.projects[0]?.links?.client_repo}"] { display: none !important; }
+      a[href="${data.projects[0]?.links?.server_repo}"] { display: none !important; }
+    </style>`;
+    html = html.replace('</head>', `${hideCSS}</head>`);
 
   // Write compiled HTML
-  
+  if (!process.env.VERCEL) {
+    fs.writeFileSync(liveHtmlPath, html);
+  }
   
   // 13. JS Hydration replacements
   js = js.replace(/"Mehedi Hasan"/g, JSON.stringify(data.general.name));
@@ -963,6 +979,9 @@ function compileWebsite(originalData) {
   js = js.replace(/"I specialize in developing modern full-stack applications using the MERN stack with a strong focus on performance and clean architecture\. I’m passionate about solving real-world problems and continuously improving my skills\. Let’s connect and discuss how I can contribute to your next project\."/g, JSON.stringify(data.metadata.description.slice(0, 300)));
   
   // Write compiled client JS
+  if (!process.env.VERCEL) {
+    fs.writeFileSync(templateJsPath, js);
+  }
   
   
   console.log("Successfully compiled portfolio files!");
@@ -973,7 +992,6 @@ function compileWebsite(originalData) {
   let CACHED_JS = null;
 
   const server = http.createServer(async (req, res) => {
-    await connectDB();
     const parsedUrl = url.parse(req.url, true);
     let pathname = parsedUrl.pathname;
     const method = req.method;
@@ -1350,6 +1368,5 @@ connectDB().then(async () => {
 
 // Export handler for Vercel
 module.exports = async (req, res) => {
-  await connectDB();
   server.emit('request', req, res);
 };
