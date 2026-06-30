@@ -980,7 +980,7 @@ function compileWebsite(originalData) {
   
   // Write compiled client JS
   if (!process.env.VERCEL) {
-    fs.writeFileSync(templateJsPath, js);
+    fs.writeFileSync(liveJsPath, js);
   }
   
   
