@@ -933,7 +933,6 @@ function compileWebsite(originalData) {
   });
 
   // Replace remaining hardcoded profile text & image in static HTML to match client components hydration props
-    html = html.replace(/Nadimul Haque Akib/g, data.general.name);
   html = html.replace(/Mehedi Hasan/g, data.general.name);
   html = html.replace(/Software Engineer/g, data.hero.role);
     html = html.replace(/%2Fimages%2Fmehedi2\.png/g, encodeURIComponent(data.about.image));
@@ -965,6 +964,7 @@ function compileWebsite(originalData) {
   
   // 13. JS Hydration replacements
   js = js.replace(/"Mehedi Hasan"/g, JSON.stringify(data.general.name));
+  js = js.replace(/"Software Engineer"/g, JSON.stringify(data.hero.role));
   js = js.replace(/"Mehedi"/g, JSON.stringify(data.general.name));
   js = js.replace(/"\/images\/mehedi\.png"/g, JSON.stringify(data.general.avatar));
   js = js.replace(/"\/resume\.pdf"/g, JSON.stringify(data.general.resume_path));
