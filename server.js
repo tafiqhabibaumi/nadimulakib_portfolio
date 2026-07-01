@@ -196,6 +196,8 @@ function compileWebsite(originalData) {
   header img[alt="Logo"] {
     object-fit: contain !important;
     object-position: left center !important;
+    transform: scale(3.5) !important;
+    transform-origin: left center !important;
   }
   /* Qualifications Logo sizing fix to prevent pixelation/stretching */
   section#qualifications img[data-nimg="fill"] {
