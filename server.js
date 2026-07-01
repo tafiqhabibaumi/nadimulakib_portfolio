@@ -190,6 +190,11 @@ function compileWebsite(originalData) {
     object-fit: cover !important;
     object-position: center center !important;
   }
+  /* Qualifications Logo sizing fix to prevent pixelation/stretching */
+  section#qualifications img[data-nimg="fill"] {
+    object-fit: contain !important;
+    object-position: center center !important;
+  }
   section#home .absolute.bottom-0 {
     width: 90% !important;
     max-width: 90% !important;
