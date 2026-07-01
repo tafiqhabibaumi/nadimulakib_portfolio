@@ -163,14 +163,7 @@ function compileWebsite(originalData) {
   html = replaceBetween(html, '<!-- OG_DESC_START -->', '<!-- OG_DESC_END -->', `<meta property="og:description" content="${data.metadata.og_description}"/>`);
   html = replaceBetween(html, '<!-- OG_URL_START -->', '<!-- OG_URL_END -->', `<meta property="og:url" content="${data.metadata.og_url}"/>`);
   html = replaceBetween(html, '<!-- OG_IMAGE_START -->', '<!-- OG_IMAGE_END -->', `<meta property="og:image" content="${data.metadata.og_image}"/>`);
-  let faviconHref = data.general.favicon;
-  if (originalData.general.favicon) {
-    const imgHref = originalData.general.favicon.startsWith('data:') ? originalData.general.favicon : faviconHref;
-    const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><image href="${imgHref}" x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid meet"/></svg>`;
-    faviconHref = `data:image/svg+xml;base64,${Buffer.from(svgStr).toString('base64')}`;
-  }
-  html = replaceBetween(html, '<!-- FAVICON_START -->', '<!-- FAVICON_END -->', `<link rel="icon" href="${faviconHref}" type="image/svg+xml"/>`);
-
+  html = replaceBetween(html, '<!-- FAVICON_START -->', '<!-- FAVICON_END -->', `<link rel="icon" href="${data.general.favicon}" sizes="31x32" type="image/x-icon"/>`);
   
   // 2. Custom CSS Styles Overrides (Primary/Secondary color themes)
   const stylesOverride = `
@@ -278,27 +271,17 @@ function compileWebsite(originalData) {
   `;
   html = replaceBetween(html, '<!-- TICKER_START -->', '<!-- TICKER_END -->', tickerHTML);
   
+  // 5.5 Social Icons HTML for Hydration Override
   const customSocialHTML = `
-    <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 5rem;">
-      <div style="position: absolute; width: 2px; height: calc(100% + 4.5rem); border-left: 2px dotted ${data.general.primary_color}80; z-index: -10; top: -2.3rem;"></div>
-      
-      <div style="position: absolute; width: 10px; height: 10px; border-radius: 50%; background-color: ${data.general.primary_color}; top: -2.3rem; box-shadow: 0 0 10px 2px ${data.general.primary_color}b3;"></div>
-      
-      <div style="position: absolute; width: 6px; height: 6px; border-radius: 50%; background-color: ${data.general.primary_color}; top: 4.8rem; box-shadow: 0 0 8px 1px ${data.general.primary_color}80;"></div>
-      <div style="position: absolute; width: 6px; height: 6px; border-radius: 50%; background-color: ${data.general.primary_color}; top: 12.3rem; box-shadow: 0 0 8px 1px ${data.general.primary_color}80;"></div>
-      
-      <div style="position: absolute; width: 10px; height: 10px; border-radius: 50%; background-color: ${data.general.primary_color}; bottom: -2.3rem; box-shadow: 0 0 10px 2px ${data.general.primary_color}b3;"></div>
-
-      <a href="${data.hero.facebook || '#'}" target="_blank" class="flex items-center justify-center text-3xl border-2 border-primary p-3 rounded-full cursor-target hover:scale-125 duration-500 hover:shadow-lg" style="background-color: #030014; box-shadow: inset 0 0 0 10px #030014;">
+      <a href="${data.hero.facebook || '#'}" target="_blank" class="flex items-center justify-center text-3xl border-2 border-primary p-3 rounded-full cursor-target hover:scale-125 duration-500 hover:shadow-lg hover:shadow-[#5227ff]/50">
         <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"></path></svg>
       </a>
-      <a href="${data.hero.linkedin || '#'}" target="_blank" class="flex items-center justify-center text-3xl border-2 border-primary p-3 rounded-full cursor-target hover:scale-125 duration-500 hover:shadow-lg" style="background-color: #030014; box-shadow: inset 0 0 0 10px #030014;">
+      <a href="${data.hero.linkedin || '#'}" target="_blank" class="flex items-center justify-center text-3xl border-2 border-primary p-3 rounded-full cursor-target hover:scale-125 duration-500 hover:shadow-lg hover:shadow-[#5227ff]/50">
         <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 448 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M100.28 448H7.4V148.9h92.88zM53.79 108.1C24.09 108.1 0 83.5 0 53.8a53.79 53.79 0 0 1 107.58 0c0 29.7-24.1 54.3-53.79 54.3zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.29-79.2-48.29 0-55.69 37.7-55.69 76.7V448h-92.78V148.9h89.08v40.8h1.3c12.4-23.5 42.69-48.3 87.88-48.3 94 0 111.28 61.9 111.28 142.3V448z"></path></svg>
       </a>
-      <a href="${data.hero.instagram || '#'}" target="_blank" class="flex items-center justify-center text-3xl border-2 border-primary p-3 rounded-full cursor-target hover:scale-125 duration-500 hover:shadow-lg" style="background-color: #030014; box-shadow: inset 0 0 0 10px #030014;">
+      <a href="${data.hero.instagram || '#'}" target="_blank" class="flex items-center justify-center text-3xl border-2 border-primary p-3 rounded-full cursor-target hover:scale-125 duration-500 hover:shadow-lg hover:shadow-[#5227ff]/50">
         <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 448 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"></path></svg>
-      </a>
-    </div>`;
+      </a>`;
   html = html.replace('</body>', `<script>
       window.CUSTOM_TICKER_HTML = ${JSON.stringify(tickerItemsHTML)};
       window.CUSTOM_TICKER_SECTION_HTML = ${JSON.stringify(tickerHTML)};
