@@ -195,9 +195,9 @@ function compileWebsite(originalData) {
   /* Navbar Logo sizing fix - use contain to fit without stretching */
   header img[alt="Logo"] {
     object-fit: contain !important;
-    object-position: left center !important;
-    transform: scale(3.5) !important;
-    transform-origin: left center !important;
+    object-position: center center !important;
+    transform: scale(1.5) !important;
+    transform-origin: center center !important;
   }
   /* Qualifications Logo sizing fix to prevent pixelation/stretching */
   section#qualifications img[data-nimg="fill"] {
