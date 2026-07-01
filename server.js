@@ -204,6 +204,10 @@ function compileWebsite(originalData) {
     object-fit: contain !important;
     object-position: center center !important;
   }
+  /* Push Hero text down so it doesn't overlap the logo */
+  section#home .space-y-6 {
+    margin-top: 120px !important;
+  }
   section#home .absolute.bottom-0 {
     width: 90% !important;
     max-width: 90% !important;
